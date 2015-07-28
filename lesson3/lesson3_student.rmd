@@ -17,7 +17,7 @@ names(pf)
 ```{r Histogram of Users\' Birthdays}
 #install.packages('ggplot2')
 library(ggplot2)
-qplot(x=dob_day, data=pf) + scale_x_discrete(breaks=1:31)
+qplot(x=dob_day, data=pf) + scale_x_discrete(breaks=1:31) + facet_wrap(~pH)
 ```
 
 ***
