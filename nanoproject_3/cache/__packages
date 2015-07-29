@@ -1,0 +1,12 @@
+base
+ggplot2
+dplyr
+RColorBrewer
+GGally
+psych
+gridExtra
+scales
+reshape2
+lattice
+MASS
+memisc
