@@ -236,17 +236,54 @@ alcohol makes wine taste better?
 A set of box plots are created for all features. The data is limited to the
 middle 90%. The mean for each category is plotted as an "x". Creating such 
 boxplots should help see the trend of each feature by wine "quality" and also 
-see the largest range of a feature at "quality: level.
-```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', results = "hide", BoxPlot}
+see the largest range of a feature at "quality": level.
+
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', results = "markup", BoxPlot}
+
+# Put comments in a list for the plots. 
+fixed.acidity.comment <- "The mean and median of the fixed.acidity feature does not appear to change much with quality. Additionally, the range of the middle 50% of the data is largely different only for the quaity level of 9."
+
+volatile.acidity.comment <- "It is not entirely clear if volatile.acidity affects quality. There is a minimum median at the quality level of 6. The range of the middle 50% of the data seems to increase with quality."
+
+citric.acid.comment <- "It is not entirely clear if citric.acid affects quality. The mean and median increases at the highest quality, and the range decreases with increasing quality."
+
+residual.sugar.comment <- "It is not entirely clear if residual.sugar affects quality. There is a maximum median at the quality level of 5 and there is a minimum median at the quality level of 9."
+
+chlorides.comment <- "The mean and median of the chlorides feature appears to decrease with quality. Additionally, the range of the middle 50% of the data gets smaller with quality."
+  
+free.sulfur.dioxide.comment <- "It is not entirely clear if free.sulfur.dioxide affects quality. The mean is lower for quality levels 3 - 4 than for levels 5 - 9. The mean/median does not change much for levels 5 - 9."
+  
+total.sulfur.dioxide.comment <- "The mean and median of the total.sulfur.dioxide feature appears to decrease with quality. Additionally, the range of the middle 50% of the data gets smaller with quality."
+
+density.comment <- "The mean and median of the density feature appears to decrease with quality. Additionally, the range of the middle 50% of the data gets smaller with quality."
+  
+pH.comment <- "The mean and median of the pH feature appears to increase with quality. Additionally, the range of the middle 50% of the data gets smaller with quality."
+  
+sulphates.comment <- "The mean and median of the sulphates feature does not appear to change much with quality."
+  
+alcohol.comment <- "The mean and median of the alcohol feature appears to increase with quality. Additionally, the range of the middle 50% of the data gets smaller with quality."
+
+# Put comments in a list  
+box_comments <- c(fixed.acidity.comment, volatile.acidity.comment,
+                  citric.acid.comment, residual.sugar.comment, 
+                  chlorides.comment, free.sulfur.dioxide.comment,
+                  total.sulfur.dioxide.comment, density.comment, pH.comment,
+                  sulphates.comment, alcohol.comment)
+
+# The indices of the comments list are features in the wine dataframe
+names(box_comments) <- names(wine)[2:12]
 
 # Loop through all the features to make boxplots, separated by "score". Only the middle 90% of data is plotted and the mean of each feature for each "score" is plotted as an "x".
-lapply((names(wine)[2:12]), 
-       function(i) ggplot(subset(wine, !is.na(quality) & !is.na(i)), 
+for (i in names(wine)[2:12]) {
+        p <- ggplot(subset(wine, !is.na(quality) & !is.na(i)), 
                           aes_string(x = "score", y = i, fill = "score")) +
-         geom_boxplot() + 
-         ylim_quantile(wine[[i]], low_q, high_q) +
-         scale_fill_brewer(type = color_palette) + 
-         stat_summary(fun.y = mean, geom = "point", shape = 4))
+           geom_boxplot() + 
+           ylim_quantile(wine[[i]], low_q, high_q) +
+           scale_fill_brewer(type = color_palette) + 
+           stat_summary(fun.y = mean, geom = "point", shape = 4)
+        print(p)
+        print(box_comments[[i]])
+}
 ```
 
 The features that appear to vary with wine quality are "volatile.acidity",
@@ -288,7 +325,7 @@ this set. Similarly, "total.sulfur.dioxide" has a strong correlation with
 quality will be analyzed more closely in the next section.
 
 ### Middle 90% of Alcohol vs. Density
-```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', Scatterplot_1}
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', Scatterplot_1a}
 
 ggplot(wine, aes(x = alcohol, y = density, color = score)) + 
   geom_point() + 
@@ -296,7 +333,15 @@ ggplot(wine, aes(x = alcohol, y = density, color = score)) +
   ylim_quantile(wine$density, low_q, high_q) +
   geom_smooth(method = "loess", color = "black") + 
   scale_color_brewer(type = color_palette)
+```
 
+There is a strong negative linear relationship between "density"" and "alcohol".
+As "alcohol" increases, "density"" decreases. The higher quality wines tend
+cluster in the lower right region, which is the higher alcohol content, lower
+"density" wines.  It would be interesting to see if this ratio is a better
+feature. 
+
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', Scatterplot_1b}
 # Color by "residual.sugar" - need to create a midpoint for continuous variables
 mid<-median(subset(wine$residual.sugar, wine$residual.sugar < 25))
 ggplot(wine, aes(x = alcohol, y = density, color = residual.sugar)) + 
@@ -307,12 +352,6 @@ ggplot(wine, aes(x = alcohol, y = density, color = residual.sugar)) +
   scale_color_gradient2(limits = c(0, 25), midpoint = mid, low = "magenta", 
                         mid = "white", high = "green" )
 ```
-
-There is a strong negative linear relationship between "density"" and "alcohol".
-As "alcohol" increases, "density"" decreases. The higher quality wines tend
-cluster in the lower right region, which is the higher alcohol content, lower
-"density" wines.  It would be interesting to see if this ratio is a better
-feature. 
 
 Since "density" and "alcohol" are highly correlated with 
 "residual.sugar", the same plot is created (colored by "residual.sugar" content 
@@ -433,7 +472,8 @@ Now that the secondary attributes are investigated, the median attributes of
 each feature by quality are investigated. Using the medians can help
 see overall trends in the data, that can be lost in scatterplots of the full 
 data set. This section is used to confirm interpretations of previous analyses.
-```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, fig.height = 2, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', results = "hide", QualityGroup}
+
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, fig.height = 2, results = "markup", cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', QualityGroup}
 
 # Group by quality and get median values for each level
 wine_by_quality <- subset(wine, !is.na(quality)) %>%
@@ -449,15 +489,45 @@ wine_by_quality <- subset(wine, !is.na(quality)) %>%
             alcohol_median = median(alcohol)) %>%
   arrange(quality)
 
-lapply((names(wine_by_quality)[2:10]), 
-       function(i) ggplot(wine_by_quality, 
-                          aes_string(x = i, y = "quality")) +
-         geom_point() + 
-         geom_smooth(method = "lm", color = "black"))
+# Make comments for the plots. 
+volatile.acidity.comment <- "The correlation of the medians of volatile.acidity and quality is moderately strong. However, plot shows that there is not a strong trend in quality change due to volatile.acidity."
 
-lapply((names(wine_by_quality)[2:10]), 
-       function(i) cor(x = wine_by_quality[[i]], y =wine_by_quality$quality,
-         method = "pearson"))
+citric.acid.comment <- "The correlation of the medians of citric.acid and quality is moderately strong. However, plot shows that there is not a strong trend in quality change due to citric.acid."
+
+residual.sugar.comment <- "The correlation of the medians of residual.sugar and quality is moderately strong. However, plot shows that there is not a strong trend in quality change due to residual.sugar."
+
+chlorides.comment <- "The correlation of the medians of chlorides and quality is very strong. The plot also shows that there is a strong trend in quality change due to chlorides."
+  
+free.sulfur.dioxide.comment <- "The correlation of the medians of free.sulfur.dioxide and quality is weak. The plot also shows that there is a weak trend in quality change due to free.sulfur.dioxide."
+  
+total.sulfur.dioxide.comment <- "The correlation of the medians of total.sulfur.dioxide and quality is quite strong. The plot also shows that there is a strong trend in quality change due to total.sulfur.dioxide."
+
+density.comment <- "The correlation of the medians of density and quality is very strong. The plot also shows that there is a strong trend in quality change due to density."
+  
+pH.comment <- "The correlation of the medians of pH and quality is quite strong. The plot also shows that there is a strong trend in quality change due to pH."
+  
+alcohol.comment <- "The correlation of the medians of alcohol and quality is very strong. The plot also shows that there is a strong trend in quality change due to alcohol."
+
+# Put comments in a list  
+group_comments <- c(volatile.acidity.comment, citric.acid.comment, 
+                    residual.sugar.comment, chlorides.comment, 
+                    free.sulfur.dioxide.comment, total.sulfur.dioxide.comment, 
+                    density.comment, pH.comment, alcohol.comment)
+
+# The indices of the comments list are features in the wine dataframe
+names(group_comments) <- names(wine_by_quality)[2:10]
+
+#lapply((names(wine_by_quality)[2:10]), 
+for (i in names(wine_by_quality)[2:10]) {
+  p <- ggplot(wine_by_quality, aes_string(x = i, y = "quality")) +
+         geom_point() + 
+         geom_smooth(method = "lm", color = "black")
+  print(p)
+  print(paste0("Correlation is ", cor(x = wine_by_quality[[i]], 
+                                      y = wine_by_quality$quality, 
+                                      method = "pearson")))
+  print(group_comments[[i]])
+}
 
 rm(wine_by_quality)
 ```
@@ -510,7 +580,8 @@ For this part of the analysis, the wines are separated into two sets. A set of
 wines that has 4 $g/dm^3$ "residual.sugar"" content or less, and a set of wines
 that has more than 4 $g/dm^3$ "residual.sugar". A previous histogram showed a
 bimodal distribution of "residual.sugar" content. This analysis is done to see
-if the wines in the data set should be separated by this feature.
+if the wines in the data set should be separated by this feature. The following
+two histograms show the two subsets of wine.
 
 ```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', results = "hide", fig.width = 7.5, fig.height = 3, SugarSubsets}
 
@@ -532,6 +603,12 @@ grid.arrange(plot_1, plot_2, ncol = 2)
 ```
 
 #### Residual Sugar Subset - 4 $g/dm^3$ and under
+
+To see if a subset is different from the general wine population, the means and
+correlations of the different features in the subset are compared to the global
+means and correlations (presented in a previous section). The means of each
+feature and a matrix plot for this subset is presented below.
+
 ```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', fig.width = 7.5, fig.height = 7.5, SugarSubset4under}
 
 # Find the means and plot a matrix of plots for this subset
@@ -552,6 +629,12 @@ set. The exceptions include: lower "residual.sugar", "free.sulfur.dioxide", and
 low "residual.sugar" subset since some statistics are different.
 
 #### Residual Sugar Subset - over 4 $g/dm^3$
+
+To see if a subset is different from the general wine population, the means and
+correlations of the different features in the subset are compared to the global
+means and correlations (presented in a previous section). The means of each
+feature and a matrix plot for this subset is presented below.
+
 ```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', fig.width = 7.5, fig.height = 7.5, SugarSubset4over}
 
 # Find the means and plot a matrix of plots for this subset
@@ -568,8 +651,14 @@ wines. This subset does have slightly higher means in "chlorides" and
 "free.sulfur.dioxide".
 
 ### Worst Wine Analysis
+
 This section explores wines with a rating of 4 or less in order to see their 
-common characteristics.
+common characteristics. To see if a subset is different from the general wine 
+population, the means and correlations of the different features in the subset 
+are compared to the global means and correlations (presented in a previous 
+section). The means of each feature and a matrix plot for this subset is 
+presented below.
+
 ```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', fig.width = 7.5, fig.height = 7.5, WorstWine}
 
 # Create a subset for the worst wines
@@ -588,7 +677,11 @@ wine "quality".
 
 ### Best Wine Analysis
 This section explores wines with a rating of 8 or better in order to see their 
-common characteristics.
+common characteristics. To see if a subset is different from the general wine 
+population, the means and correlations of the different features in the subset 
+are compared to the global means and correlations (presented in a previous 
+section). The means of each feature and a matrix plot for this subset is 
+presented below.
 
 ```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, cache = TRUE, cache.path = 'cache/', fig.path = 'figure/', fig.width = 7.5, fig.height = 7.5, BestWine}
 
@@ -605,6 +698,7 @@ The best wines have lower "chlorides" and more "alcohol", which are features
 that were seen to be important in predicting "quality".
 
 ### Note on Not Building a Linear Model
+
 A linear model does not seem appropriate for predicting the quality of a wine
 since "quality" is a categorical variable. In  fact, Cortez et al. (2009) use
 Support Vector Machine (SVM) to predict the quality of wine. The ultimate
@@ -720,6 +814,6 @@ could not be treated as a continuous variable, like diamond price. At first, I
 was trying to find which feature transformations would lead to the highest
 correlation with "quality". Since there are only seven "quality" categories,
 correlations do not tell the whole story. After this realization, the analysis
-became easier and I was able to ask interesting questions. I think finding the
-interesting subsets (citric acid peak, and residual sugar subsets) will be
-useful for future analysis and applying a machine learning algorithm.
+became easier and I was able to ask interesting questions. 
+
+I think finding the interesting subsets (citric acid peak, and residual sugar subsets) will be useful for future analysis and applying a machine learning algorithm.
